@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>c1c63e76fe4e47a094a02ad433fc92af</title>
+  <title>9742595c0dba42758e7bd2b8897d36d2</title>
   <style>
     html {
       line-height: 1.5;
@@ -283,64 +283,172 @@ Insight and Policy Decision</a></li>
 </section>
 <section id="data-collection" class="cell markdown">
 <h2>Data Collection</h2>
+<p>For this section, we'll be looking for datasets that will benefit our
+analysis on climate change. All of our datasets will be provided by <a
+href="https://climate.nasa.gov/">NASA's climate website</a>. Make sure
+to register an <a href="https://urs.earthdata.nasa.gov/home">Earthdata
+account</a> account as it will be needed to download the required
+datasets. To get our data, we will be downloading each file using
+HTTP/HTTPS access and saving them as txt files.</p>
+<p>To get started with the python code, we'll install several libraries
+as so:</p>
 </section>
-<div class="cell code" data-execution_count="32">
+<div class="cell code" data-execution_count="105">
 <div class="sourceCode" id="cb1"><pre
 class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span></code></pre></div>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> LinearRegression</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statsmodels.formula.api <span class="im">as</span> smf</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statsmodels.api <span class="im">as</span> sm</span></code></pre></div>
+</div>
+<div class="cell markdown">
+<p>Here is what each package does: <ul> <li>Numpy - a library that deals
+with arrays.</li> <li>Pandas - a library used to analyze datasets.</li>
+<li>matplotlib - a library used for graphing data. Most utilities in
+this library lie under the pyplot submodule.</li> <li>sklearn - a
+library used for machine learning which allows us to apply regression to
+our data.</li> <li>statsmodels - a library that provides statistical
+computations for our data.</li> </ul></p>
+<p>To get started, we'll be obtaining CO2 data.</p>
+<p>Much discussion of climate change revolves around CO2 emissions. When
+sunlight reaches Earth, most of it is either absorbed by the Earth's
+surface or by the atmosphere after being reflected as infrared waves by
+the surface. The way the atmosphere absorbs some of the heat is through
+its greenhouse gases, with the most significant gas being CO2. While
+some molecules like nitrogen and oxygen don't interfere with the sun's
+infrared waves, greenhouse gases like CO2 will absorb these waves, then
+re-emit them in all directions, thereby heating up the Earth.
+Historically, CO2 never reached beyond 300 parts per million in the
+Earth's atmosphere, but since the 1950s, CO2 levels have reached beyond
+300 ppm and now sit at 421 ppm.</p>
+<p>We'll be obtaining the CO2 data from the NASA website mentioned
+before via HTTPS, then saving the file as
+"monthly_co2_emissions.txt".</p>
+<p>We will also be obtaining the data from the "Ocean Warming", "Global
+Temperature", and "Sea Level" sections. Get the data via HTTP, then save
+the files as "ocean_heat.txt", "global_temperatures", and
+"global_sea_level.txt" respectively.</p>
 </div>
 <section id="data-processing" class="cell markdown">
 <h2>Data Processing</h2>
 </section>
-<div class="cell code" data-execution_count="33">
+<div class="cell code" data-execution_count="106">
 <div class="sourceCode" id="cb2"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> remove_monthly_CO2_columns(monthly_co2):</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">del</span> monthly_co2[<span class="st">&#39;ObjectId&#39;</span>]</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">del</span> monthly_co2[<span class="st">&#39;Country&#39;</span>]</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">del</span> monthly_co2[<span class="st">&#39;ISO2&#39;</span>]</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">del</span> monthly_co2[<span class="st">&#39;ISO3&#39;</span>]</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">del</span> monthly_co2[<span class="st">&#39;Indicator&#39;</span>]</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">del</span> monthly_co2[<span class="st">&#39;Unit&#39;</span>]</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">del</span> monthly_co2[<span class="st">&#39;Source&#39;</span>]</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">del</span> monthly_co2[<span class="st">&#39;CTS_Name&#39;</span>]</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">del</span> monthly_co2[<span class="st">&#39;CTS_Full_Descriptor&#39;</span>]</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">del</span> monthly_co2[<span class="st">&#39;CTS_Code&#39;</span>]</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> monthly_co2</span></code></pre></div>
-</div>
-<div class="cell code" data-execution_count="34">
-<div class="sourceCode" id="cb3"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> extract_monthly_CO2_percents(monthly_co2):</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">&quot;hello&quot;</span>)</span></code></pre></div>
-</div>
-<div class="cell code" data-execution_count="35">
-<div class="sourceCode" id="cb4"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Monthly CO2 readings</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>monthly_co2 <span class="op">=</span> pd.read_csv(<span class="st">&quot;Atmospheric_CO2_Concentrations.csv&quot;</span>)</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>monthly_co2 <span class="op">=</span> remove_monthly_CO2_columns(monthly_co2)</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(monthly_co2.head(<span class="dv">20</span>))</span></code></pre></div>
+class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Processing the monthly CO2 data</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">&#39;monthly_co2_emissions.txt&#39;</span>) <span class="im">as</span> f:</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    monthly_co2_data <span class="op">=</span> f.readlines()</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="kw">del</span> monthly_co2_data[<span class="dv">0</span>:<span class="dv">58</span>]</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>monthly_co2 <span class="op">=</span> pd.DataFrame(columns<span class="op">=</span>[<span class="st">&#39;year&#39;</span>, <span class="st">&#39;month&#39;</span>, <span class="st">&#39;decimal date&#39;</span>, <span class="st">&#39;monthly average&#39;</span>, <span class="st">&#39;de-seasonalized&#39;</span>, <span class="st">&#39;# days&#39;</span>, <span class="st">&#39;# days(std)&#39;</span>, <span class="st">&#39;# days(unc)&#39;</span>])</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> monthly_co2_data:</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    data <span class="op">=</span> i.split()</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    monthly_co2.loc[<span class="bu">len</span>(monthly_co2)] <span class="op">=</span> data</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(monthly_co2.head(<span class="dv">10</span>).to_string())</span></code></pre></div>
 <div class="output stream stdout">
-<pre><code>       Date   Value
-0   1958M03  315.70
-1   1958M04  317.45
-2   1958M05  317.51
-3   1958M06  317.24
-4   1958M07  315.86
-5   1958M08  314.93
-6   1958M09  313.20
-7   1958M10  312.43
-8   1958M11  313.33
-9   1958M12  314.67
-10  1959M01  315.58
-11  1959M02  316.48
-12  1959M03  316.65
-13  1959M03    0.30
-14  1959M04  317.72
-15  1959M04    0.09
-16  1959M05  318.29
-17  1959M05    0.25
-18  1959M06  318.15
-19  1959M06    0.29
+<pre><code>   year month decimal date monthly average de-seasonalized # days # days(std) # days(unc)
+0  1958     3    1958.2027          315.70          314.43     -1       -9.99       -0.99
+1  1958     4    1958.2877          317.45          315.16     -1       -9.99       -0.99
+2  1958     5    1958.3699          317.51          314.71     -1       -9.99       -0.99
+3  1958     6    1958.4548          317.24          315.14     -1       -9.99       -0.99
+4  1958     7    1958.5370          315.86          315.18     -1       -9.99       -0.99
+5  1958     8    1958.6219          314.93          316.18     -1       -9.99       -0.99
+6  1958     9    1958.7068          313.20          316.08     -1       -9.99       -0.99
+7  1958    10    1958.7890          312.43          315.41     -1       -9.99       -0.99
+8  1958    11    1958.8740          313.33          315.20     -1       -9.99       -0.99
+9  1958    12    1958.9562          314.67          315.43     -1       -9.99       -0.99
+</code></pre>
+</div>
+</div>
+<div class="cell code" data-execution_count="107">
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Processing the global ocean heat content</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">&#39;ocean_heat.txt&#39;</span>) <span class="im">as</span> f:</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    ocean_heat_data <span class="op">=</span> f.readlines()</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="kw">del</span> ocean_heat_data[<span class="dv">0</span>]</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>ocean_heat <span class="op">=</span> pd.DataFrame(columns<span class="op">=</span>[<span class="st">&#39;year&#39;</span>, <span class="st">&#39;WO&#39;</span>, <span class="st">&#39;WO(std)&#39;</span>, <span class="st">&#39;NH&#39;</span>, <span class="st">&#39;NH(std)&#39;</span>, <span class="st">&#39;SH&#39;</span>, <span class="st">&#39;SH(std)&#39;</span>])</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> ocean_heat_data:</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    data <span class="op">=</span> i.split()</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    ocean_heat.loc[<span class="bu">len</span>(ocean_heat)] <span class="op">=</span> data</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(ocean_heat.head(<span class="dv">10</span>))</span></code></pre></div>
+<div class="output stream stdout">
+<pre><code>     year      WO WO(std)      NH NH(std)      SH SH(std)
+0  1957.5  -9.303   2.025  -3.149   0.925  -6.153   1.100
+1  1958.5  -8.059   2.017  -2.321   0.851  -5.738   1.166
+2  1959.5  -8.713   2.036  -2.505   0.824  -6.208   1.212
+3  1960.5  -5.479   1.893  -1.587   0.746  -3.892   1.148
+4  1961.5  -4.762   1.773  -1.936   0.711  -2.826   1.061
+5  1962.5  -4.121   1.728  -2.022   0.645  -2.100   1.082
+6  1963.5  -5.697   1.815  -2.209   0.678  -3.487   1.137
+7  1964.5  -6.521   1.733  -2.395   0.581  -4.125   1.152
+8  1965.5  -7.218   1.741  -2.763   0.561  -4.455   1.179
+9  1966.5  -9.122   1.664  -2.807   0.543  -6.315   1.121
+</code></pre>
+</div>
+</div>
+<div class="cell code" data-execution_count="108">
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Processing global temperatures</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">&#39;global_temperatures.txt&#39;</span>) <span class="im">as</span> f:</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    global_temp_data <span class="op">=</span> f.readlines()</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="kw">del</span> global_temp_data[<span class="dv">0</span>:<span class="dv">5</span>]</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>global_temps <span class="op">=</span> pd.DataFrame(columns<span class="op">=</span>[<span class="st">&#39;year&#39;</span>, <span class="st">&#39;no smoothing&#39;</span>, <span class="st">&#39;lowess(5)&#39;</span>])</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> global_temp_data:</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    data <span class="op">=</span> i.split()</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    global_temps.loc[<span class="bu">len</span>(global_temps)] <span class="op">=</span> data</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(global_temps.head(<span class="dv">10</span>))</span></code></pre></div>
+<div class="output stream stdout">
+<pre><code>   year no smoothing lowess(5)
+0  1880        -0.17     -0.10
+1  1881        -0.09     -0.13
+2  1882        -0.11     -0.17
+3  1883        -0.18     -0.21
+4  1884        -0.29     -0.24
+5  1885        -0.34     -0.27
+6  1886        -0.32     -0.28
+7  1887        -0.37     -0.27
+8  1888        -0.17     -0.27
+9  1889        -0.11     -0.26
+</code></pre>
+</div>
+</div>
+<div class="cell code" data-execution_count="109">
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Processing global sea levels</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">&#39;global_sea_level.txt&#39;</span>) <span class="im">as</span> f:</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    global_sea_data <span class="op">=</span> f.readlines()</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="kw">del</span> global_sea_data[<span class="dv">0</span>:<span class="dv">50</span>]</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>global_sea_levels <span class="op">=</span> pd.DataFrame(columns<span class="op">=</span>[<span class="st">&#39;1&#39;</span>, <span class="st">&#39;2&#39;</span>, <span class="st">&#39;year+fraction&#39;</span>, <span class="st">&#39;4&#39;</span>, <span class="st">&#39;5&#39;</span>, <span class="st">&#39;GMSL (mm)&#39;</span>, <span class="st">&#39;GMSL(std, mm)&#39;</span>, <span class="st">&#39;8&#39;</span>, <span class="st">&#39;9&#39;</span>, <span class="st">&#39;10&#39;</span>, <span class="st">&#39;11&#39;</span>, <span class="st">&#39;12&#39;</span>, <span class="st">&#39;13&#39;</span>])</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> global_sea_data:</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    data <span class="op">=</span> i.split()</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    global_sea_levels.loc[<span class="bu">len</span>(global_sea_levels)] <span class="op">=</span> data</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>global_sea_levels <span class="op">=</span> global_sea_levels.drop(columns<span class="op">=</span>[<span class="st">&#39;1&#39;</span>, <span class="st">&#39;2&#39;</span>, <span class="st">&#39;4&#39;</span>, <span class="st">&#39;5&#39;</span>, <span class="st">&#39;8&#39;</span>, <span class="st">&#39;9&#39;</span>, <span class="st">&#39;10&#39;</span>, <span class="st">&#39;11&#39;</span>, <span class="st">&#39;12&#39;</span>, <span class="st">&#39;13&#39;</span>])</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(global_sea_levels.head(<span class="dv">10</span>))</span></code></pre></div>
+<div class="output stream stdout">
+<pre><code>  year+fraction GMSL (mm) GMSL(std, mm)
+0  1993.0115260    -38.61         89.88
+1  1993.0386920    -42.01         90.93
+2  1993.0658580    -41.97         87.31
+3  1993.0930250    -42.71         90.79
+4  1993.1201910    -37.88         90.29
+5  1993.1473570    -36.10         89.99
+6  1993.1745230    -36.13         88.77
+7  1993.2016890    -35.55         89.52
+8  1993.2288550    -35.48         88.79
+9  1993.2560210    -39.27         98.09
 </code></pre>
 </div>
 </div>
@@ -348,17 +456,195 @@ class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a hr
 class="cell markdown">
 <h2>Exploratory Analysis and Data Visualization</h2>
 </section>
+<div class="cell code" data-execution_count="121">
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Display of the monthly CO2 concentrations</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>co2_monthly_avg <span class="op">=</span> monthly_co2[<span class="st">&#39;monthly average&#39;</span>].astype(<span class="bu">float</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>co2_year <span class="op">=</span> monthly_co2[<span class="st">&#39;decimal date&#39;</span>].astype(<span class="bu">float</span>)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>,<span class="dv">6</span>))</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>plt.scatter(co2_year, co2_monthly_avg, s<span class="op">=</span><span class="dv">15</span>)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">&#39;year&#39;</span>)</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">&#39;monthly CO2 concentrations (ppm)&#39;</span>)</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>plt.xticks(fontsize<span class="op">=</span><span class="dv">8</span>, rotation<span class="op">=</span><span class="dv">45</span>)</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div>
+<div class="output display_data">
+<p><img
+src="vertopal_1869ddb3ce784237918e88762cc8c48b/caee01bbc7ca4ba20567c0a9269e22c9f639f8f9.png" /></p>
+</div>
+</div>
+<div class="cell code" data-execution_count="126">
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Display of the global ocean heat content</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>WO_anomaly <span class="op">=</span> ocean_heat[<span class="st">&#39;WO&#39;</span>].astype(<span class="bu">float</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>NH_anomaly <span class="op">=</span> ocean_heat[<span class="st">&#39;NH&#39;</span>].astype(<span class="bu">float</span>)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>SH_anomaly <span class="op">=</span> ocean_heat[<span class="st">&#39;SH&#39;</span>].astype(<span class="bu">float</span>)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>ocean_heat_year<span class="op">=</span> ocean_heat[<span class="st">&#39;year&#39;</span>].astype(<span class="bu">float</span>)</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>,<span class="dv">6</span>))</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>plt.scatter(ocean_heat_year, WO_anomaly, s<span class="op">=</span><span class="dv">15</span>)</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>plt.scatter(ocean_heat_year, NH_anomaly, s<span class="op">=</span><span class="dv">15</span>)</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>plt.scatter(ocean_heat_year, SH_anomaly, s<span class="op">=</span><span class="dv">15</span>)</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">&#39;year&#39;</span>)</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">&#39;Global Ocean Heat Content&#39;</span>)</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">&#39;Ocean Heat Anomaly (10^22 Joules)&#39;</span>)</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>plt.xticks(fontsize<span class="op">=</span><span class="dv">8</span>, rotation<span class="op">=</span><span class="dv">45</span>)</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div>
+<div class="output display_data">
+<p><img
+src="vertopal_1869ddb3ce784237918e88762cc8c48b/ad41a94fd313a626d8fb46a4156f0ccb54ca3c81.png" /></p>
+</div>
+</div>
+<div class="cell code" data-execution_count="133">
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Display of Global Temperatures</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>temp_year<span class="op">=</span> global_temps[<span class="st">&#39;year&#39;</span>].astype(<span class="st">&#39;int&#39;</span>)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>temp_no_soothing <span class="op">=</span> global_temps[<span class="st">&#39;no smoothing&#39;</span>].astype(<span class="st">&#39;float&#39;</span>)</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>temp_lowess <span class="op">=</span> global_temps[<span class="st">&#39;lowess(5)&#39;</span>].astype(<span class="st">&#39;float&#39;</span>)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>,<span class="dv">6</span>))</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>plt.scatter(temp_year, temp_no_soothing, s<span class="op">=</span><span class="dv">15</span>)</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>plt.scatter(temp_year, temp_lowess, s<span class="op">=</span><span class="dv">15</span>)</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">&#39;year&#39;</span>)</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>plt.legend([<span class="st">&#39;no smoothing&#39;</span>, <span class="st">&#39;lowess(5)&#39;</span>])</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">&#39;Global Temperatures&#39;</span>)</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">&#39;Temperature Anomaly (celsius)&#39;</span>)</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>plt.xticks(fontsize<span class="op">=</span><span class="dv">8</span>, rotation<span class="op">=</span><span class="dv">45</span>)</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div>
+<div class="output display_data">
+<p><img
+src="vertopal_1869ddb3ce784237918e88762cc8c48b/b6f98700f3f159a53ac8733e4a9b35227ceb9a9b.png" /></p>
+</div>
+</div>
+<div class="cell code" data-execution_count="137">
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Display of global sea levels</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>sea_level_year<span class="op">=</span> global_sea_levels[<span class="st">&#39;year+fraction&#39;</span>].astype(<span class="st">&#39;float&#39;</span>)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>mean_sea_level <span class="op">=</span> global_sea_levels[<span class="st">&#39;GMSL (mm)&#39;</span>].astype(<span class="st">&#39;float&#39;</span>)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>,<span class="dv">6</span>))</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>plt.scatter(sea_level_year, mean_sea_level, s<span class="op">=</span><span class="dv">15</span>)</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">&#39;year&#39;</span>)</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">&#39;Global Mean Sea Levels Over Time&#39;</span>)</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">&#39;Global Mean Sea Levels (mm)&#39;</span>)</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>plt.xticks(fontsize<span class="op">=</span><span class="dv">8</span>, rotation<span class="op">=</span><span class="dv">45</span>)</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div>
+<div class="output display_data">
+<p><img
+src="vertopal_1869ddb3ce784237918e88762cc8c48b/50ec5174603db225de135c1990f7d48f12ce521c.png" /></p>
+</div>
+</div>
 <section id="model-analysis-hypothesis-testing-and-machine-learning"
 class="cell markdown">
 <h2>Model: Analysis, Hypothesis Testing, and Machine Learning</h2>
 </section>
+<div class="cell code" data-execution_count="159">
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Line of best fit for CO2 emissions</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>regx_co2 <span class="op">=</span> np.array(co2_year).reshape(<span class="op">-</span><span class="dv">1</span>,<span class="dv">1</span>)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>reg_co2 <span class="op">=</span> LinearRegression().fit(regx_co2, co2_monthly_avg)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>reg_co2.score(regx_co2, co2_monthly_avg)</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>co2_y_pred <span class="op">=</span> reg_co2.predict(regx_co2)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>,<span class="dv">6</span>))</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>plt.scatter(co2_year, co2_monthly_avg)</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>plt.plot(regx_co2, co2_y_pred)</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>monthly_co2 <span class="op">=</span> monthly_co2.<span class="bu">apply</span>(pd.to_numeric)</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>res <span class="op">=</span> smf.ols(<span class="st">&#39;Q(&quot;monthly average&quot;) ~ Q(&quot;decimal date&quot;)&#39;</span>, data<span class="op">=</span>monthly_co2).fit()</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(res.summary())</span></code></pre></div>
+<div class="output display_data">
+<p><img
+src="vertopal_1869ddb3ce784237918e88762cc8c48b/27af944a25ef1b501b3f9a9fd8b151757fa439d2.png" /></p>
+</div>
+<div class="output stream stdout">
+<pre><code>                             OLS Regression Results                             
+================================================================================
+Dep. Variable:     Q(&quot;monthly average&quot;)   R-squared:                       0.976
+Model:                              OLS   Adj. R-squared:                  0.976
+Method:                   Least Squares   F-statistic:                 3.236e+04
+Date:                  Thu, 15 Jun 2023   Prob (F-statistic):               0.00
+Time:                          23:22:45   Log-Likelihood:                -2330.4
+No. Observations:                   783   AIC:                             4665.
+Df Residuals:                       781   BIC:                             4674.
+Df Model:                             1                                         
+Covariance Type:              nonrobust                                         
+=====================================================================================
+                        coef    std err          t      P&gt;|t|      [0.025      0.975]
+-------------------------------------------------------------------------------------
+Intercept         -2870.4632     17.949   -159.924      0.000   -2905.697   -2835.229
+Q(&quot;decimal date&quot;)     1.6218      0.009    179.886      0.000       1.604       1.639
+==============================================================================
+Omnibus:                       45.135   Durbin-Watson:                   0.067
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):               47.800
+Skew:                           0.573   Prob(JB):                     4.17e-11
+Kurtosis:                       2.613   Cond. No.                     2.10e+05
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+[2] The condition number is large, 2.1e+05. This might indicate that there are
+strong multicollinearity or other numerical problems.
+</code></pre>
+</div>
+</div>
+<div class="cell code" data-execution_count="161">
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Line of best fit for global ocean heat content</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>regx_gohc <span class="op">=</span> np.array(ocean_heat_year).reshape(<span class="op">-</span><span class="dv">1</span>,<span class="dv">1</span>)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>reg_gohc <span class="op">=</span> LinearRegression().fit(regx_gohc, WO_anomaly)</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>reg_gohc.score(regx_gohc, WO_anomaly)</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>gohc_y_pred <span class="op">=</span> reg_gohc.predict(regx_gohc)</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>,<span class="dv">6</span>))</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>plt.scatter(ocean_heat_year, WO_anomaly)</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>plt.plot(regx_gohc, gohc_y_pred)</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>ocean_heat <span class="op">=</span> ocean_heat.<span class="bu">apply</span>(pd.to_numeric)</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>res <span class="op">=</span> smf.ols(<span class="st">&#39;Q(&quot;year&quot;) ~ Q(&quot;WO&quot;)&#39;</span>, data<span class="op">=</span>ocean_heat).fit()</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(res.summary())</span></code></pre></div>
+<div class="output display_data">
+<p><img
+src="vertopal_1869ddb3ce784237918e88762cc8c48b/4662c7130db093b8c3d30619346fad802e540eda.png" /></p>
+</div>
+<div class="output stream stdout">
+<pre><code>                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:              Q(&quot;year&quot;)   R-squared:                       0.930
+Model:                            OLS   Adj. R-squared:                  0.929
+Method:                 Least Squares   F-statistic:                     824.5
+Date:                Thu, 15 Jun 2023   Prob (F-statistic):           1.61e-37
+Time:                        23:30:03   Log-Likelihood:                -192.33
+No. Observations:                  64   AIC:                             388.7
+Df Residuals:                      62   BIC:                             393.0
+Df Model:                           1                                         
+Covariance Type:            nonrobust                                         
+==============================================================================
+                 coef    std err          t      P&gt;|t|      [0.025      0.975]
+------------------------------------------------------------------------------
+Intercept   1981.7073      0.670   2955.931      0.000    1980.367    1983.047
+Q(&quot;WO&quot;)        1.8196      0.063     28.714      0.000       1.693       1.946
+==============================================================================
+Omnibus:                        4.521   Durbin-Watson:                   0.102
+Prob(Omnibus):                  0.104   Jarque-Bera (JB):                4.450
+Skew:                          -0.609   Prob(JB):                        0.108
+Kurtosis:                       2.572   Cond. No.                         11.4
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+</code></pre>
+</div>
+</div>
 <section id="interpretation-insight-and-policy-decision"
 class="cell markdown">
 <h2>Interpretation: Insight and Policy Decision</h2>
 </section>
-<div class="cell code" data-execution_count="36">
-<div class="sourceCode" id="cb6"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Ice Sheets</span></span></code></pre></div>
-</div>
 </body>
 </html>
